@@ -1,6 +1,18 @@
-# paralia_sdk
+<p align="center">
+  <img src="assets/paralia-logo.svg" alt="Paralia" height="56">
+</p>
+
+<h1 align="center">paralia_sdk</h1>
+
+<p align="center">
+  <a href="https://github.com/Paralia-Labs/paralia_sdk/actions/workflows/test.yml"><img src="https://github.com/Paralia-Labs/paralia_sdk/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-BSD--2--Clause-183EFC.svg" alt="License: BSD-2-Clause"></a>
+  <img src="https://img.shields.io/badge/python-3.10%2B-183EFC.svg" alt="Python 3.10+">
+</p>
 
 A small, generic toolkit shared across the Paralia suite's apps: typed HTTP clients for calling each app's network API, and mesh geometry utilities with no proprietary logic. Built so an app like [parable](https://github.com/Paralia-Labs/parable) can talk to a proprietary service over its network API and process meshes locally, without ever needing that service's source code.
+
+Part of the [Paralia Labs](https://github.com/Paralia-Labs) suite — see [paralia.io/docs](https://www.paralia.io/docs) for how this fits alongside `parable` and the rest of the platform.
 
 ## What's here
 
