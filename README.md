@@ -1,6 +1,6 @@
 # paralia_sdk
 
-A small, generic toolkit shared across the Paralia suite's apps: typed HTTP clients for calling each app's network API, and mesh geometry utilities with no proprietary logic. Built so an app like [parable](https://github.com/kotegc/parable) can talk to a proprietary service over its network API and process meshes locally, without ever needing that service's source code.
+A small, generic toolkit shared across the Paralia suite's apps: typed HTTP clients for calling each app's network API, and mesh geometry utilities with no proprietary logic. Built so an app like [parable](https://github.com/Paralia-Labs/parable) can talk to a proprietary service over its network API and process meshes locally, without ever needing that service's source code.
 
 ## What's here
 
@@ -12,7 +12,7 @@ A small, generic toolkit shared across the Paralia suite's apps: typed HTTP clie
 ## Install
 
 ```bash
-pip install "paralia_sdk @ git+https://github.com/kotegc/paralia_sdk.git"
+pip install "paralia_sdk @ git+https://github.com/Paralia-Labs/paralia_sdk.git"
 ```
 
 ## Quickstart
