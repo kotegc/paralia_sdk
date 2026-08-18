@@ -1,18 +1,15 @@
 """
-Typed client for paradigm's batch/evaluation network API
-(`paradigm/paradigm/io/batch_api.py`). This is what replaced parable's
-in-process `from paradigm.api import ParadigmInput, run_scan_pipeline,
-PipelineParams` call — same never-raises contract (a pipeline failure comes
-back as `success=False` with a stage/reason, never an exception from this
-client), just over HTTP instead of an in-process function call, since
-parable no longer has paradigm's source available to import.
+Typed client for paradigm's batch/evaluation pipeline API: hand it a mesh,
+get back origin/axis recovery, cap/dr metrics, and optionally the full
+heatmap grid. Same never-raises contract as the service itself — a pipeline
+failure comes back as `success=False` with a stage/reason, never an
+exception from this client.
 
-NOT a client for paradigm's *other* API (`io/api.py`, the interactive
-viewer's `/run`/`/ducky`/`/upload`) — that one is keyed by mesh name against
-a small cache built for one interactive specimen, not shaped for "run the
-full pipeline on this specific mesh and give me back everything a batch
-harness needs." If a future app needs the viewer's endpoints, it gets its
-own client method here rather than overloading this one.
+NOT a client for paradigm's *other*, viewer-facing API (mesh-name-keyed,
+cached for one interactive specimen at a time) — that one is shaped for a
+live UI, not for "run the full pipeline on this mesh and give me back
+everything a batch caller needs." A future client for that API would be its
+own method or class here, not an overload of this one.
 """
 
 from __future__ import annotations
@@ -26,28 +23,21 @@ from .http import BaseClient
 
 @dataclass
 class ParadigmRunResult:
-    """Mirrors paradigm.api.ParadigmOutput field-for-field, so a caller that
-    used to build a ParadigmResult from a ParadigmOutput (parable's
-    `runners/paradigm_adapter.py`) barely needs to change."""
+    """The result of one pipeline run. Field shapes mirror the batch API's
+    JSON response directly."""
 
     success: bool
-    origin: Optional[tuple] = None
-    primary_axis: Optional[tuple] = None
+    origin: Optional[tuple[float, float, float]] = None
+    primary_axis: Optional[tuple[float, float, float]] = None
     failure_stage: Optional[str] = None
     failure_reason: Optional[str] = None
     runtime_seconds: float = 0.0
     metrics: dict = field(default_factory=dict)
-    debug: str = ""
+    debug: str = ""  # a short diagnostic string the pipeline attaches to its result, if any
     heatmap: Optional[dict] = None  # present only when include_heatmap=True was requested
 
 
 class ParadigmClient(BaseClient):
-    def health(self) -> bool:
-        try:
-            return bool(self.get("/health", timeout=5.0).get("ok"))
-        except Exception:
-            return False
-
     def run_pipeline(
         self,
         mesh: Mesh,
@@ -63,17 +53,14 @@ class ParadigmClient(BaseClient):
         body = write_stl_bytes(mesh)
         headers = {
             "X-Filename": f"{case_id or 'mesh'}.stl",
-            "X-Case-Id": case_id,
             "X-Include-Heatmap": "true" if include_heatmap else "false",
+            "Content-Type": "application/octet-stream",
         }
+        if case_id:
+            headers["X-Case-Id"] = case_id
         if sdf_backend:
             headers["X-Sdf-Backend"] = sdf_backend
-        resp = self.post(
-            "/pipeline/run",
-            data=body,
-            headers={**headers, "Content-Type": "application/octet-stream"},
-            timeout=timeout,
-        )
+        resp = self.post("/pipeline/run", data=body, headers=headers, timeout=timeout)
         return ParadigmRunResult(
             success=resp.get("success", False),
             origin=tuple(resp["origin"]) if resp.get("origin") is not None else None,

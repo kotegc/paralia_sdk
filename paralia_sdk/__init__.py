@@ -1,9 +1,7 @@
 """
-paralia_sdk — the internal contract every Paralia app (paradigm, parable, and
-future tools like parapet/parasol) uses to talk to every other app, plus the
-generic geometry utilities that don't belong to any one app's proprietary
-algorithm. See ../../docs/internal-api-sdk.md for the pattern a new app
-should follow to plug into this.
+paralia_sdk — the shared contract every Paralia app (paradigm, parable, and
+future services) uses to talk to every other app, plus the generic geometry
+utilities that don't belong to any one app's proprietary algorithm.
 
 Two independent things live here, deliberately not entangled:
   - `paralia_sdk.geometry` — Mesh + mesh I/O + world-Z alignment. Pure numpy,
@@ -13,6 +11,11 @@ Two independent things live here, deliberately not entangled:
     clients wrapping each app's network API (shared-secret auth, timeouts,
     typed errors). This is what replaces in-process imports of a proprietary
     app's source: a consumer gets the app's *output*, never its source.
+
+If you're adding a client for a new service, keep it a thin wrapper around
+`paralia_sdk.http.BaseClient` — auth, request/response shaping, error
+handling — with no side effects (file I/O, etc.) baked in; that belongs in
+the calling application's own adapter code.
 """
 
 from .geometry import Mesh, AlignmentResult, align_mesh_to_world_z

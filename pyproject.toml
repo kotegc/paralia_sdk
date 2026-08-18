@@ -6,11 +6,38 @@ build-backend = "setuptools.build_meta"
 name = "paralia_sdk"
 version = "0.1.0"
 description = "Internal client SDK + shared geometry utilities for Paralia's apps (paradigm, parable, and future tools)."
+readme = "README.md"
 requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+    { name = "kotegc" },
+]
+keywords = ["api-client", "sdk", "mesh", "geometry"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Typing :: Typed",
+]
 dependencies = [
     "numpy",
     "requests",
 ]
 
+[project.urls]
+Homepage = "https://github.com/kotegc/paralia_sdk"
+Repository = "https://github.com/kotegc/paralia_sdk"
+Issues = "https://github.com/kotegc/paralia_sdk/issues"
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
 [tool.setuptools.packages.find]
 include = ["paralia_sdk*"]
+
+[tool.setuptools.package-data]
+paralia_sdk = ["py.typed"]

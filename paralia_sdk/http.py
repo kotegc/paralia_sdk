@@ -41,6 +41,8 @@ class BaseClient:
         timeout: float = 30.0,
         max_retries: int = 1,
     ):
+        if max_retries < 0:
+            raise ValueError("max_retries must be >= 0")
         self.base_url = base_url.rstrip("/")
         self._secret = internal_secret if internal_secret is not None else os.environ.get(
             "API_INTERNAL_SECRET", ""
@@ -49,10 +51,19 @@ class BaseClient:
         self.max_retries = max_retries
         self._session = requests.Session()
 
-    def _headers(self, extra: Optional[dict] = None) -> dict:
+    def health(self, timeout: float = 5.0) -> bool:
+        """GET /health and report whether the service answered {"ok": true}.
+        Never raises — a health check failing IS the answer, not an error
+        condition the caller needs to handle separately."""
+        try:
+            return bool(self.get("/health", timeout=timeout).get("ok"))
+        except Exception:
+            return False
+
+    def _headers(self, extra_headers: Optional[dict[str, str]] = None) -> dict[str, str]:
         headers = {"X-Internal-Secret": self._secret}
-        if extra:
-            headers.update(extra)
+        if extra_headers:
+            headers.update(extra_headers)
         return headers
 
     def _request(
@@ -60,15 +71,15 @@ class BaseClient:
         method: str,
         path: str,
         *,
-        json_body: Any = None,
-        data: Any = None,
-        headers: Optional[dict] = None,
+        json_body: Optional[dict[str, Any]] = None,
+        data: Optional[bytes] = None,
+        headers: Optional[dict[str, str]] = None,
         timeout: Optional[float] = None,
     ) -> Any:
         url = f"{self.base_url}{path}"
-        attempt = 0
+        resp = None
         last_exc: Optional[Exception] = None
-        while attempt <= self.max_retries:
+        for _attempt in range(self.max_retries + 1):
             try:
                 resp = self._session.request(
                     method,
@@ -81,11 +92,8 @@ class BaseClient:
                 break
             except requests.RequestException as exc:
                 last_exc = exc
-                attempt += 1
-                if attempt > self.max_retries:
-                    raise ParaliaAPIError(f"{method} {url} failed: {exc}") from exc
-        else:  # pragma: no cover - loop always breaks or raises
-            raise ParaliaAPIError(f"{method} {url} failed: {last_exc}")
+        if resp is None:
+            raise ParaliaAPIError(f"{method} {url} failed: {last_exc}") from last_exc
 
         if resp.status_code >= 400:
             try:
@@ -102,11 +110,11 @@ class BaseClient:
             return resp.json()
         return resp.content
 
-    def get(self, path: str, **kw) -> Any:
+    def get(self, path: str, **kw: Any) -> Any:
         return self._request("GET", path, **kw)
 
-    def post(self, path: str, **kw) -> Any:
+    def post(self, path: str, **kw: Any) -> Any:
         return self._request("POST", path, **kw)
 
-    def delete(self, path: str, **kw) -> Any:
+    def delete(self, path: str, **kw: Any) -> Any:
         return self._request("DELETE", path, **kw)

@@ -1,25 +1,24 @@
 """
-Generic mesh I/O and PCA world-Z alignment — vendored from paradigm's
-`core/types.py::Mesh`, `io/mesh_io.py`, and `core/align.py`, byte-for-byte
-behavior-identical at the time of this split (2026-08-17).
+Generic mesh I/O and PCA world-Z alignment — vendored from paradigm (a
+proprietary sibling system), byte-for-byte behavior-identical to paradigm's
+own copy at the time of this split (2026-08-17).
 
-This is a deliberate *copy*, not a shared import from paradigm: paradigm is
-proprietary and parable (an open-source consumer of this SDK) must never
-depend on paradigm's source, even indirectly through a "generic-looking"
-utility module that happens to live inside paradigm's package. Everything in
-this file is self-contained, dependency-free geometry math with no coupling
-to paradigm's actual differentiated pipeline (SDF/liner/heatmap/cap
-detection, all still exclusively in `paradigm/core/`) — hand-rolled mesh
+This is a deliberate *copy*, not a shared import: paradigm is proprietary
+and any open-source consumer of this SDK must never depend on paradigm's
+source, even indirectly through a "generic-looking" utility module that
+happens to live inside paradigm's own package. Everything in this file is
+self-contained, dependency-free geometry math with no coupling to
+paradigm's actual differentiated pipeline (its SDF/liner/heatmap/cap
+detection stay exclusively on paradigm's own side) — hand-rolled mesh
 format parsers and a textbook PCA-align-to-Z-axis operation.
 
-Tradeoff, stated plainly: paradigm's own copies of this code are NOT
+Tradeoff, stated plainly: paradigm's own copy of this code is NOT
 re-pointed at this module, so the two now drift independently rather than
-sharing one source of truth. That's intentional here — re-pointing would
-mean editing paradigm's `core/types.py`/`core/align.py`/`io/mesh_io.py` (real
-pipeline-adjacent files) to depend on a new external package, which is a
-larger-blast-radius change than duplicating ~500 lines of already-stable,
-already-tested I/O code. If the two ever need to be reconciled, this file
-and paradigm's `io/mesh_io.py`/`core/align.py` are the two copies to diff.
+sharing one source of truth. That's intentional — re-pointing paradigm's
+own pipeline-adjacent internals at an external package is a larger-blast-
+radius change than duplicating ~500 lines of already-stable, already-tested
+I/O code. If the two ever need to be reconciled, someone with access to
+both codebases is the one who'd do that diff.
 """
 
 from __future__ import annotations

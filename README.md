@@ -15,13 +15,39 @@ A small, generic toolkit shared across the Paralia suite's apps: typed HTTP clie
 pip install "paralia_sdk @ git+https://github.com/kotegc/paralia_sdk.git"
 ```
 
+## Quickstart
+
+Every client needs a base URL for the service it talks to, and a shared secret for the `X-Internal-Secret` auth header — either passed explicitly or read from the `API_INTERNAL_SECRET` environment variable if omitted.
+
+```python
+import os
+from paralia_sdk import ParadigmClient
+from paralia_sdk.geometry import read_mesh
+
+client = ParadigmClient(
+    base_url="http://localhost:8091",         # or a deployed service's URL
+    internal_secret=os.environ["API_INTERNAL_SECRET"],
+)
+
+mesh = read_mesh("scan.stl")
+result = client.run_pipeline(mesh, case_id="case_001")
+
+if result.success:
+    print(result.origin, result.primary_axis)
+else:
+    print(f"failed at {result.failure_stage}: {result.failure_reason}")
+```
+
+`ParableClient` follows the same construction pattern (`base_url`, `internal_secret`) for parable's job-queue API.
+
 ## Development
 
 ```bash
-pip install -e .
-pip install pytest
+pip install -e ".[dev]"
 pytest tests/
 ```
+
+See `CONTRIBUTING.md` for more, and `TESTING.md` for what's not covered yet.
 
 ## Design notes
 
